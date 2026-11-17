@@ -36,10 +36,11 @@ import { TaskSchedulerView } from './components/TaskSchedulerView';
 import { AdminRulesView } from './components/AdminRulesView';
 import { CallCenterAgentView } from './components/CallCenterAgentView';
 import { AdminDashboardView } from './components/AdminDashboardView';
+import { CustomerProfilePage } from './components/CustomerProfilePage';
 import { formatDuration, getSentimentBadge } from './lib/utils';
 import { Language, translations } from './lib/i18n';
 
-type NavigationTab = 'dashboard' | 'calls' | 'explorer' | 'staff' | 'customers' | 'evaluations' | 'tasks' | 'rules' | 'agent_workspace';
+type NavigationTab = 'dashboard' | 'calls' | 'explorer' | 'staff' | 'customers' | 'customer_profile' | 'evaluations' | 'tasks' | 'rules' | 'agent_workspace';
 export type Theme = 'light' | 'dark';
 export type UserRole = 'admin' | 'agent';
 
@@ -59,6 +60,7 @@ export const App: React.FC = () => {
   const [selectedPresetId, setSelectedPresetId] = useState<string>('');
   const [selectedCallId, setSelectedCallId] = useState<string | null>(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [previousTab, setPreviousTab] = useState<NavigationTab>('agent_workspace');
   const [isConnected, setIsConnected] = useState(false);
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -224,6 +226,12 @@ export const App: React.FC = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
     });
+  };
+
+  const handleOpenCustomerProfile = (customerId: string) => {
+    setSelectedCustomerId(customerId);
+    setPreviousTab(currentTab);
+    setCurrentTab('customer_profile');
   };
 
   const selectedCall = calls.find(c => c.id === selectedCallId) || calls[0];
@@ -596,6 +604,9 @@ export const App: React.FC = () => {
                 setSelectedCallId(callId);
                 setCurrentTab('explorer');
               }}
+              onSelectCustomer={(custId) => {
+                handleOpenCustomerProfile(custId);
+              }}
               lang={lang}
             />
           )}
@@ -613,8 +624,7 @@ export const App: React.FC = () => {
                 setCurrentTab('explorer');
               }}
               onSelectCustomer={(custId) => {
-                setSelectedCustomerId(custId);
-                setCurrentTab('customers');
+                handleOpenCustomerProfile(custId);
               }}
               onSelectStaff={(_staffId) => {
                 setCurrentTab('staff');
@@ -664,7 +674,12 @@ export const App: React.FC = () => {
                       {calls.map(call => (
                         <tr key={call.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                           <td className="py-4">
-                            <span className="font-bold text-slate-900 dark:text-slate-100 text-base block">{call.customerName}</span>
+                            <button
+                              onClick={() => handleOpenCustomerProfile(call.customerId)}
+                              className="font-bold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 text-base block text-left rtl:text-right transition-colors"
+                            >
+                              {call.customerName}
+                            </button>
                             <span className="text-xs text-slate-500 font-mono" dir="ltr">{call.customerPhone}</span>
                           </td>
                           <td className="py-4 text-slate-700 dark:text-slate-300 font-medium">
@@ -716,8 +731,7 @@ export const App: React.FC = () => {
                 }}
                 onUpdateTaskStatus={handleUpdateTaskStatus}
                 onSelectCustomer={(custId) => {
-                  setSelectedCustomerId(custId);
-                  setCurrentTab('customers');
+                  handleOpenCustomerProfile(custId);
                 }}
                 lang={lang}
                 isAgentView={userRole === 'agent'}
@@ -752,6 +766,9 @@ export const App: React.FC = () => {
                 setSelectedCallId(callId);
                 setCurrentTab('explorer');
               }}
+              onOpenDedicatedProfile={(custId) => {
+                handleOpenCustomerProfile(custId);
+              }}
               selectedCustomerId={selectedCustomerId}
               onCustomerAdded={(newCust) => {
                 setCustomers(prev => {
@@ -774,8 +791,7 @@ export const App: React.FC = () => {
                 setCurrentTab('explorer');
               }}
               onSelectCustomerCRM={(custId) => {
-                setSelectedCustomerId(custId);
-                setCurrentTab('customers');
+                handleOpenCustomerProfile(custId);
               }}
               lang={lang}
             />
@@ -791,11 +807,47 @@ export const App: React.FC = () => {
                 setCurrentTab('explorer');
               }}
               onSelectCustomer={(custId) => {
-                setSelectedCustomerId(custId);
-                setCurrentTab('customers');
+                handleOpenCustomerProfile(custId);
               }}
               lang={lang}
             />
+          )}
+
+          {/* View: Standalone Dedicated Customer Profile Page */}
+          {currentTab === 'customer_profile' && (
+            (() => {
+              const profileCustomer = customers.find(c => c.id === selectedCustomerId) || customers[0];
+              if (!profileCustomer) {
+                return (
+                  <div className="h-64 flex items-center justify-center text-slate-400 text-sm">
+                    No customer selected.
+                  </div>
+                );
+              }
+              return (
+                <CustomerProfilePage
+                  customer={profileCustomer}
+                  calls={calls}
+                  tasks={tasks}
+                  onBack={() => {
+                    setCurrentTab(previousTab === 'customer_profile' ? (userRole === 'agent' ? 'agent_workspace' : 'customers') : previousTab);
+                  }}
+                  onSelectCall={(callId) => {
+                    setSelectedCallId(callId);
+                    setPreviousTab('customer_profile');
+                    setCurrentTab('explorer');
+                  }}
+                  onUpdateTaskStatus={handleUpdateTaskStatus}
+                  onTaskCreated={(newTask) => {
+                    setTasks(prev => {
+                      if (prev.some(t => t.id === newTask.id)) return prev;
+                      return [newTask, ...prev];
+                    });
+                  }}
+                  lang={lang}
+                />
+              );
+            })()
           )}
 
           {/* View 6: Admin Rubrics */}

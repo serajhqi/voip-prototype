@@ -26,6 +26,7 @@ export const translations = {
       tasks: 'Follow-up Actions',
       calendar: 'Work Calendar & Schedule',
       rules: 'Admin Rubrics & Prompts',
+      customerProfile: 'Customer Dedicated Profile',
     },
     screenPop: {
       incomingCall: 'Incoming Call (Screen Pop)',
@@ -326,6 +327,7 @@ export const translations = {
       tasks: 'پیگیری‌ها و اقدامات آتی',
       calendar: 'تقویم کاری و برنامه‌ریزی',
       rules: 'شاخص‌های ارزیابی و پرامپت‌ها',
+      customerProfile: 'صفحه اختصاصی پرونده مشتری',
     },
     screenPop: {
       incomingCall: 'تماس ورودی (پاپ‌آپ CTI)',

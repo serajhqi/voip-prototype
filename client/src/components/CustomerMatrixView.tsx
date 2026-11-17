@@ -10,7 +10,8 @@ import {
   Calendar, 
   MessageSquare, 
   ListTodo, 
-  Volume2
+  Volume2,
+  ExternalLink
 } from 'lucide-react';
 import { formatTimeAgo, formatDuration, getSentimentBadge, getUrgencyBadge } from '../lib/utils';
 import { Language, translations } from '../lib/i18n';
@@ -21,6 +22,7 @@ interface CustomerMatrixViewProps {
   calls: CallRecord[];
   tasks?: FollowUpTask[];
   onSelectCall: (callId: string) => void;
+  onOpenDedicatedProfile?: (customerId: string) => void;
   selectedCustomerId?: string | null;
   onCustomerAdded?: (newCustomer: Customer) => void;
   lang: Language;
@@ -31,6 +33,7 @@ export const CustomerMatrixView: React.FC<CustomerMatrixViewProps> = ({
   calls,
   tasks = [],
   onSelectCall,
+  onOpenDedicatedProfile,
   selectedCustomerId,
   onCustomerAdded,
   lang
@@ -188,11 +191,23 @@ export const CustomerMatrixView: React.FC<CustomerMatrixViewProps> = ({
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <span className="text-xs text-slate-400 uppercase font-bold block">{t.customerMatrix.priorityTier}</span>
-                    <span className="text-sm font-bold text-purple-600 dark:text-purple-400 font-mono">
-                      Tier {currentCustomer.effortTier} - {t.customerMatrix.highTouch}
-                    </span>
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="text-right">
+                      <span className="text-xs text-slate-400 uppercase font-bold block">{t.customerMatrix.priorityTier}</span>
+                      <span className="text-sm font-bold text-purple-600 dark:text-purple-400 font-mono">
+                        Tier {currentCustomer.effortTier} - {t.customerMatrix.highTouch}
+                      </span>
+                    </div>
+
+                    {onOpenDedicatedProfile && (
+                      <button
+                        onClick={() => onOpenDedicatedProfile(currentCustomer.id)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-sm"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>{isRtl ? 'مشاهده صفحه اختصاصی' : 'Open Standalone Profile'}</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 

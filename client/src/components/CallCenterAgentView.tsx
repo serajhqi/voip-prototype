@@ -32,6 +32,7 @@ interface CallCenterAgentViewProps {
   onCustomerAdded?: (newCustomer: Customer) => void;
   onTaskCreated?: (newTask: FollowUpTask) => void;
   onSelectCall?: (callId: string) => void;
+  onSelectCustomer?: (customerId: string) => void;
   lang: Language;
 }
 
@@ -46,6 +47,7 @@ export const CallCenterAgentView: React.FC<CallCenterAgentViewProps> = ({
   onCustomerAdded,
   onTaskCreated,
   onSelectCall,
+  onSelectCustomer,
   lang
 }) => {
   const [selectedStaffId, setSelectedStaffId] = useState<string>(staffList[0]?.id || '');
@@ -625,11 +627,22 @@ export const CallCenterAgentView: React.FC<CallCenterAgentViewProps> = ({
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <span className="text-xs text-slate-400 uppercase font-bold block">{t.screenPop.purchaseWillingness}</span>
-                    <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">
-                      {activeCustomer.purchaseWillingness}%
-                    </span>
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="text-right">
+                      <span className="text-xs text-slate-400 uppercase font-bold block">{t.screenPop.purchaseWillingness}</span>
+                      <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">
+                        {activeCustomer.purchaseWillingness}%
+                      </span>
+                    </div>
+
+                    {onSelectCustomer && (
+                      <button
+                        onClick={() => onSelectCustomer(activeCustomer.id)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-sm"
+                      >
+                        <span>{isRtl ? 'مشاهده صفحه اختصاصی' : 'Open Dedicated Page'}</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
